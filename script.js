@@ -62,7 +62,7 @@ window.addEventListener('scroll', () => {
     const windowHeight = window.innerHeight;
     const fullHeight = document.documentElement.scrollHeight;
 
-    // If user reached bottom
+
     if (scrollTop + windowHeight >= fullHeight - 5) {
         logo.style.opacity = "1";
     } else {

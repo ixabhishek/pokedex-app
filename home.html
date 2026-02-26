@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokédex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body{
+            background-image: url("ashh.png");
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(6px);
+        }
+
+        .pokedex-red {
+            background-color: #b91c1c;
+        }
+
+        .pokedex-red:hover {
+            background-color: #991b1b;
+        }
+
+        .card-theme {
+            background-color: #1f2937;
+            border: 3px solid #5a5656;
+            box-shadow: -2px 4px 0 #111;
+        }
+    </style>
+</head>
+
+<body class="text-white relative">
+
+<img src="Pokédex_logo.png"
+     class="fixed top-9 left-3 w-40 z-50 pointer-events-none select-none">
+
+    <div class="fixed top-10 left-1/2 -translate-x-1/2 w-[90%] max-w-6xl z-40">
+
+        <div class="flex flex-col md:flex-row items-center gap-6">
+
+            <div class="flex-1 relative">
+                <input id="searchInput"
+                    type="text"
+                    placeholder="Search Pokémon"
+                    class="w-full p-4 rounded-xl bg-gray-900/80 text-white border border-gray-600 backdrop-blur-md focus:outline-none focus:border-red-500" />
+
+                <div id="suggestions"
+                    class="absolute bg-gray-900 border border-gray-600 shadow rounded w-full mt-2 hidden z-50 max-h-60 overflow-y-auto">
+                </div>
+            </div>
+
+            <button id="searchBtn"
+                class="pokedex-red px-6 py-4 rounded-xl text-white font-semibold shadow">
+                Search
+            </button>
+
+            <div class="flex items-center gap-3">
+                <span class="text-white font-semibold">Sort</span>
+                <select id="sortOrder"
+                    class="bg-gray-900/80 text-white px-5 py-3 rounded-xl border border-gray-600 backdrop-blur-md outline-none">
+                    <option value="id-asc">Lowest #</option>
+                    <option value="id-desc">Highest #</option>
+                    <option value="name-asc">A–Z</option>
+                    <option value="name-desc">Z–A</option>
+                </select>
+            </div>
+
+        </div>
+    </div>
+
+    <main class="p-10 pt-40">
+        <div id="pokemonGrid"
+            class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        </div>
+
+        <div id="pagination"
+            class="flex justify-center items-center gap-4 mt-10 flex-wrap">
+            <button id="prevPage"
+                class="pokedex-red px-6 py-3 rounded shadow font-semibold">
+                Prev
+            </button>
+
+            <button id="nextPage"
+                class="pokedex-red px-6 py-3 rounded shadow font-semibold">
+                Next
+            </button>
+        </div>
+    </main>
+
+    <div id="modal"
+    class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-[100]">
+
+        <div id="modalContent"
+            class="bg-gray-900 text-white rounded-lg p-6 w-full max-w-2xl overflow-y-auto border-4 border-red-700 shadow-xl">
+        </div>
+    </div>
+
+    <script src="home.js"></script>
+</body>
+</html>
