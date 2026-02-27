@@ -1,13 +1,23 @@
-let pokemonNames = [];
-async function loadPokemonNames() {
+let allPokemon = [];
+
+async function loadAllPokemon() {
   const res = await fetch(
-    "https://pokeapi.co/api/v2/pokemon?limit=1052&offset=0"
+    "https://pokeapi.co/api/v2/pokemon?limit=1025"
   );
   const data = await res.json();
-  pokemonNames = data.results.map(p => p.name);
-}
 
-loadPokemonNames();
+  allPokemon = data.results.map(p => {
+    const id = p.url.split("/")[6];
+
+    return {
+      id: Number(id),
+      name: p.name,
+      image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
+    };
+  });
+
+  loadPokemonPage(1);
+}
 //suggestions for pokemon
 const searchInput = document.getElementById("searchInput");
 const suggestions = document.getElementById("suggestions");
@@ -121,29 +131,33 @@ const TOTAL_POKEMON = 1025;
 const totalPages = Math.ceil(TOTAL_POKEMON / limit);
 
 const pokemonCache = [];
-async function loadPokemon(page = 1) {
-    grid.innerHTML = "";
-    const offset = (page - 1) * limit;
-    const res = await fetch(
-        `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`
-    );
-    const data = await res.json();
-    for (const p of data.results) {
-        await getPokemonCard(p.url);
-    }
-    currentPage = page;
-    updatePageInfo();
-    const state = getURLState();
-    updateURL(page, state.id);
+function loadPokemonPage(page = 1) {
+  grid.innerHTML = "";
+
+  const start = (page - 1) * limit;
+  const end = start + limit;
+
+  const pageData = allPokemon.slice(start, end);
+
+  pageData.forEach(p => {
+    createCard(p);
+  });
+
+  currentPage = page;
+  updatePageInfo();
 }
 const state = getURLState();
 
 async function initializePage() {
-    await loadPokemon(state.page);
+  await loadAllPokemon();
 
-    if (state.id) {
-        showDetails(state.id);
-    }
+  const state = getURLState();
+
+  loadPokemonPage(state.page);
+
+  if (state.id) {
+    showDetails(state.id);
+  }
 }
 
 initializePage();
@@ -170,54 +184,41 @@ const typeColors = {
   fairy:"bg-pink-300 border border-solid border-pink-600 text-pink-600"
 };
 
-async function getPokemonCard(url) {
-    const res = await fetch(url);
-    const data = await res.json();
-    pokemonCache.push(data);
-    const card = document.createElement("div");
-card.className =
-    "pokemon-card bg-black text-white rounded-xl p-4 text-center cursor-pointer border-4 border-red-700 shadow-[0_0_15px_rgba(255,0,0,0.5)] hover:scale-105 transition duration-200";
-    card.dataset.name = data.name;
-    card.dataset.id = data.id;
-    const types = data.types
-        .map(t => {
-            const typeName = t.type.name;
-            const color = typeColors[typeName] || "bg-gray-200/20 border-gray-400";
+function createCard(pokemon) {
+  const card = document.createElement("div");
 
-            return `
-      <span class="${color} 
-        px-3 py-1 rounded-full text-sm font-semibold
-        border backdrop-blur-sm">
-        ${typeName}
-      </span>
-    `;
-        })
-        .join(" ");
-    card.innerHTML = `
-    <img src="${data.sprites.other['official-artwork'].front_default}"
+  card.className =
+    "pokemon-card bg-black text-white rounded-xl p-4 text-center cursor-pointer border-4 border-red-700 shadow-[0_0_15px_rgba(255,0,0,0.5)] hover:scale-105 transition duration-200";
+
+  card.dataset.name = pokemon.name;
+  card.dataset.id = pokemon.id;
+
+  card.innerHTML = `
+    <img src="${pokemon.image}"
          class="w-28 h-28 mx-auto">
-    <h3 class="capitalize font-bold text-lg">${data.name}</h3>
-    <p class="text-gray-500">#${data.id}</p>
-    <div class="flex gap-2 justify-center mt-2 capitalize">${types}</div>
+    <h3 class="capitalize font-bold text-lg">${pokemon.name}</h3>
+    <p class="text-gray-400">#${pokemon.id}</p>
   `;
-    card.onclick = () => {
-        updateURL(currentPage, data.id);
-        showDetails(data.id);
-    };
-    grid.appendChild(card);
+
+card.onclick = () => {
+    updateURL(currentPage, pokemon.id);
+    showDetails(pokemon.id);
+};
+
+  grid.appendChild(card);
 }
 
 //prev and next buttons
 
 document.getElementById("prevPage").onclick = () => {
     if (currentPage > 1) {
-        loadPokemon(currentPage - 1);
+        loadPokemonPage(currentPage - 1);
     }
 };
 
 document.getElementById("nextPage").onclick = () => {
     if (currentPage < totalPages) {
-        loadPokemon(currentPage + 1);
+        loadPokemonPage(currentPage + 1);
     }
 }
 
