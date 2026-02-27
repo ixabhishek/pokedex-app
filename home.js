@@ -273,10 +273,26 @@ function closeModal() {
 
 function updatePageInfo() {
     const pageInfo = document.getElementById("pageInfo");
+    const prevBtn = document.getElementById("prevPage");
+    const nextBtn = document.getElementById("nextPage");
 
     const start = (currentPage - 1) * limit + 1;
     const end = Math.min(currentPage * limit, TOTAL_POKEMON);
 
     pageInfo.textContent =
         `Page ${currentPage} of ${totalPages}  •  Showing ${end - start + 1} Pokémon`;
+
+    // Hide Prev button on first page
+    if (currentPage === 1) {
+        prevBtn.style.display = "none";
+    } else {
+        prevBtn.style.display = "inline-block";
+    }
+
+    // Hide Next button on last page
+    if (currentPage === totalPages) {
+        nextBtn.style.display = "none";
+    } else {
+        nextBtn.style.display = "inline-block";
+    }
 }
