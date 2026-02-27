@@ -8,7 +8,7 @@ async function loadPokemonNames() {
 }
 
 loadPokemonNames();
-
+//suggestions for pokemon
 const searchInput = document.getElementById("searchInput");
 const suggestions = document.getElementById("suggestions");
 
@@ -174,8 +174,8 @@ async function getPokemonCard(url) {
     const data = await res.json();
     pokemonCache.push(data);
     const card = document.createElement("div");
-    card.className =
-        "pokemon-card bg-gray-200 rounded-xl shadow p-4 text-center cursor-pointer border-solid border-gray-700 text-gray-700 hover:scale-105 transition ";
+card.className =
+    "pokemon-card bg-black text-white rounded-xl p-4 text-center cursor-pointer border-4 border-red-700 shadow-[0_0_15px_rgba(255,0,0,0.5)] hover:scale-105 transition duration-200";
     card.dataset.name = data.name;
     card.dataset.id = data.id;
     const types = data.types
