@@ -132,6 +132,7 @@ async function loadPokemon(page = 1) {
         await getPokemonCard(p.url);
     }
     currentPage = page;
+    updatePageInfo();
     const state = getURLState();
     updateURL(page, state.id);
 }
@@ -268,4 +269,14 @@ async function showDetails(id) {
 function closeModal() {
     document.getElementById("modal").classList.add("hidden");
     updateURL(currentPage);
+}
+
+function updatePageInfo() {
+    const pageInfo = document.getElementById("pageInfo");
+
+    const start = (currentPage - 1) * limit + 1;
+    const end = Math.min(currentPage * limit, TOTAL_POKEMON);
+
+    pageInfo.textContent =
+        `Page ${currentPage} of ${totalPages}  •  Showing ${end - start + 1} Pokémon`;
 }

@@ -44,64 +44,53 @@ body{
 
 <a href="index.html">
     <img src="Pokédex_logo.png"
-         class="fixed top-16 left-4 w-40 z-50 hover:scale-105 transition cursor-pointer">
+         class="fixed top-5 left-25 w-28 z-50 hover:scale-105 transition cursor-pointer">
 </a>
 
-<div class="fixed top-10 left-1/2 -translate-x-1/2 w-[90%] max-w-6xl z-40">
+<div class="fixed top-0 left-0 w-full z-40 
+            bg-black border-b-4 border-red-700 
+            shadow-[0_0_20px_rgba(255,0,0,0.5)]">
 
-    <div class="flex flex-col md:flex-row items-center gap-6 
-                bg-black/80 border-4 border-red-700 
-                rounded-2xl px-6 py-5 shadow-[0_0_25px_rgba(255,0,0,0.5)]">
+    <div class="max-w-7xl mx-auto px-6 py-4 
+                flex flex-col md:flex-row 
+                items-center gap-4">
 
         <div class="flex-1 relative">
             <input id="searchInput"
                 type="text"
                 placeholder="Search Pokémon..."
-                class="w-full p-4 rounded-xl 
-                       bg-black text-white 
+                class="w-full p-3 rounded-xl 
+                       bg-gray-900 text-white 
                        border-2 border-red-600
                        focus:outline-none 
                        focus:border-red-400
-                       focus:shadow-[0_0_12px_rgba(255,0,0,0.7)]
                        transition duration-200" />
 
             <div id="suggestions"
                 class="absolute bg-black border-2 border-red-600 
-                       shadow-lg rounded-xl w-full mt-2 hidden 
+                       rounded-xl w-full mt-2 hidden 
                        z-50 max-h-60 overflow-y-auto">
             </div>
         </div>
 
         <button id="searchBtn"
-            class="px-6 py-4 rounded-xl 
+            class="px-6 py-3 rounded-xl 
                    bg-red-700 text-white font-bold
-                   border-2 border-black
-                   shadow-md
                    hover:bg-red-600
-                   hover:shadow-[0_0_15px_rgba(255,0,0,0.8)]
-                   active:scale-95
                    transition duration-150">
             Search
         </button>
 
-        <div class="flex items-center gap-3">
-            <span class="text-red-400 font-semibold tracking-wide">
-                Sort
-            </span>
-
-            <select id="sortOrder"
-                class="bg-black text-white px-5 py-3 rounded-xl 
-                       border-2 border-red-600
-                       focus:outline-none 
-                       focus:border-red-400
-                       focus:shadow-[0_0_10px_rgba(255,0,0,0.7)]
-                       transition duration-200">
-                <option value="id-asc">Lowest #</option>
-                <option value="id-desc">Highest #</option>
-                <option value="name-asc">A–Z</option>
-                <option value="name-desc">Z–A</option>
-            </select>
-        </div>
+        <select id="sortOrder"
+            class="bg-gray-900 text-white px-5 py-3 rounded-xl 
+                   border-2 border-red-600
+                   focus:outline-none focus:border-red-400
+                   transition duration-200">
+            <option value="id-asc">Lowest #</option>
+            <option value="id-desc">Highest #</option>
+            <option value="name-asc">A–Z</option>
+            <option value="name-desc">Z–A</option>
+        </select>
 
     </div>
 </div>
@@ -109,6 +98,14 @@ body{
         <div id="pokemonGrid"
             class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
         </div>
+
+<div id="pageInfo"
+     class="mx-auto text-center mb-6 
+            bg-black border-4 border-red-700 
+            text-white font-semibold 
+            px-6 py-3 rounded-xl 
+            shadow-[0_0_15px_rgba(255,0,0,0.5)]">
+</div>
 
         <div id="pagination"
             class="flex justify-center items-center gap-4 mt-10 flex-wrap">
