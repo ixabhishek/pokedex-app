@@ -1,64 +1,68 @@
+//suggestions
 let allPokemon = [];
 
-async function loadAllPokemon() {
-  const res = await fetch(
-    "https://pokeapi.co/api/v2/pokemon?limit=1025"
-  );
-  const data = await res.json();
+async function loadPokemonNames() {
+    const res = await fetch(
+        "https://pokeapi.co/api/v2/pokemon?limit=1025&offset=0"
+    );
 
-  allPokemon = data.results.map(p => {
-    const id = p.url.split("/")[6];
+    const data = await res.json();
 
-    return {
-      id: Number(id),
-      name: p.name,
-      image: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
-    };
-  });
+    allPokemon = data.results.map(p => {
+        const id = p.url.split("/").filter(Boolean).pop();
+        return {
+            id,
+            name: p.name
+        };
+    });
 
-  loadPokemonPage(1);
+    // After loading everything, render first page
+    const state = getURLState();
+    loadPokemon(state.page);
 }
-//suggestions for pokemon
+
+loadPokemonNames();
+
 const searchInput = document.getElementById("searchInput");
 const suggestions = document.getElementById("suggestions");
 
 searchInput.addEventListener("input", () => {
-  const value = searchInput.value.toLowerCase();
-  if (!value) {
-    suggestions.classList.add("hidden");
-    return;
-  }
-  const matches = pokemonNames
-    .filter(name => name.startsWith(value))
-    .slice(0, 8);
-  renderSuggestions(matches);
+    const value = searchInput.value.toLowerCase();
+    if (!value) {
+        suggestions.classList.add("hidden");
+        return;
+    }
+    const matches = pokemonNames
+        .filter(name => name.startsWith(value))
+        .slice(0, 8);
+    renderSuggestions(matches);
 });
 
 function renderSuggestions(list) {
-  suggestions.innerHTML = "";
-  if (!list.length) {
-    suggestions.classList.add("hidden");
-    return;
-  }
-  list.forEach(name => {
-    const item = document.createElement("div");
-    item.className =
-      "p-2 hover:bg-gray-100 cursor-pointer capitalize";
-    item.textContent = name;
-    item.onclick = () => {
-      searchInput.value = name;
-      suggestions.classList.add("hidden");
-      searchPokemon();
-    };
-    suggestions.appendChild(item);
-  });
-  suggestions.classList.remove("hidden");
+    suggestions.innerHTML = "";
+    if (!list.length) {
+        suggestions.classList.add("hidden");
+        return;
+    }
+    list.forEach(name => {
+        const item = document.createElement("div");
+        item.className =
+            "p-2 hover:bg-gray-100 cursor-pointer capitalize";
+        item.textContent = name;
+        item.onclick = () => {
+            searchInput.value = name;
+            suggestions.classList.add("hidden");
+            searchPokemon();
+        };
+        suggestions.appendChild(item);
+    });
+    suggestions.classList.remove("hidden");
 }
 document.addEventListener("click", (e) => {
-  if (!searchInput.contains(e.target) &&
-      !suggestions.contains(e.target)) {
-    suggestions.classList.add("hidden");
-  }
+    if (!searchInput.contains(e.target) &&
+        !suggestions.contains(e.target)) {
+        suggestions.classList.add("hidden");
+    }
 });
 
 //Search
@@ -66,19 +70,21 @@ document.addEventListener("click", (e) => {
 document.getElementById("searchBtn").onclick = searchPokemon;
 
 document.getElementById("searchInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") searchPokemon();
+    if (e.key === "Enter") searchPokemon();
 });
 
 async function searchPokemon() {
-  const value = document.getElementById("searchInput").value.toLowerCase();
-  if (!value) return;
-  grid.innerHTML = "";
-  try {
-    await getPokemonCard(`https://pokeapi.co/api/v2/pokemon/${value}`);
-  } catch {
-    grid.innerHTML = `<p class="text-red-600 text-xl">Not found</p>`;
-  }
+    const value = document.getElementById("searchInput").value.toLowerCase();
+    if (!value) return;
+    grid.innerHTML = "";
+    try {
+        await getPokemonCard(`https://pokeapi.co/api/v2/pokemon/${value}`);
+    } catch {
+        grid.innerHTML = `<p class="text-red-600 text-xl">Not found</p>`;
+    }
 }
+
+
 
 //Sorting
 
@@ -131,169 +137,148 @@ const TOTAL_POKEMON = 1025;
 const totalPages = Math.ceil(TOTAL_POKEMON / limit);
 
 const pokemonCache = [];
-function loadPokemonPage(page = 1) {
-  grid.innerHTML = "";
+async function loadPokemon(page = 1) {
 
-  const start = (page - 1) * limit;
-  const end = start + limit;
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
 
-  const pageData = allPokemon.slice(start, end);
+    grid.innerHTML = "";
+    suggestions.classList.add("hidden");
 
-  pageData.forEach(p => {
-    createCard(p);
-  });
+    const start = (page - 1) * limit;
+    const end = start + limit;
 
-  currentPage = page;
-  updatePageInfo();
+    const pagePokemon = allPokemon.slice(start, end);
+
+    pagePokemon.forEach(p => {
+        createPokemonCard(p);
+    });
+
+    currentPokemonList = pagePokemon;
+    currentPage = page;
+
+    updateURL(page);
 }
 const state = getURLState();
 
-async function initializePage() {
-  await loadAllPokemon();
+loadPokemon(state.page);
 
-  const state = getURLState();
 
-  loadPokemonPage(state.page);
-
-  if (state.id) {
-    showDetails(state.id);
-  }
+//Poke Card
+function getPokemonImage(id) {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 }
 
-initializePage();
-//Poke Card
+// const typeColors = {
+//   normal:"bg-gray-400 border border-solid border-gray-700 text-gray-700",
+//   fire:"bg-red-400 border border-solid border-red-800 text-red-800",
+//   water:"bg-blue-400 border border-solid border-blue-900 text-blue-900",
+//   electric:"bg-yellow-400 border border-solid border-yellow-700 text-yellow-700",
+//   grass:"bg-green-400 border border-solid border-green-800 text-green-800",
+//   ice:"bg-cyan-300 border border-solid border-cyan-600 text-cyan-700",
+//   fighting:"bg-red-400 border border-solid border-red-900 text-red-900",
+//   poison:"bg-purple-400 border border-solid border-purple-900 text-purple-900",
+//   ground:"bg-yellow-400 border border-solid border-yellow-900 text-yellow-900",
+//   flying:"bg-indigo-400 border border-solid border-indigo-900 text-indigo-900",
+//   psychic:"bg-pink-500 border border-solid border-pink-800 text-pink-900",
+//   bug:"bg-lime-400 border border-solid border-lime-700 text-lime-700",
+//   rock:"bg-stone-500 border border-solid border-stone-800 text-stone-800",
+//   ghost:"bg-violet-600 border border-solid border-violet-900 text-violet-900",
+//   dragon:"bg-indigo-400 border border-solid border-indigo-900 text-indigo-900",
+//   dark:"bg-gray-400 border border-solid border-black text-black",
+//   steel:"bg-slate-400 border border-solid border-slate-700 text-slate-700",
+//   fairy:"bg-pink-300 border border-solid border-pink-600 text-pink-600"
+// };
 
-const typeColors = {
-  normal:"bg-gray-400 border border-solid border-gray-700 text-gray-700",
-  fire:"bg-red-400 border border-solid border-red-800 text-red-800",
-  water:"bg-blue-400 border border-solid border-blue-900 text-blue-900",
-  electric:"bg-yellow-400 border border-solid border-yellow-700 text-yellow-700",
-  grass:"bg-green-400 border border-solid border-green-800 text-green-800",
-  ice:"bg-cyan-300 border border-solid border-cyan-600 text-cyan-700",
-  fighting:"bg-red-400 border border-solid border-red-900 text-red-900",
-  poison:"bg-purple-400 border border-solid border-purple-900 text-purple-900",
-  ground:"bg-yellow-400 border border-solid border-yellow-900 text-yellow-900",
-  flying:"bg-indigo-400 border border-solid border-indigo-900 text-indigo-900",
-  psychic:"bg-pink-500 border border-solid border-pink-800 text-pink-900",
-  bug:"bg-lime-400 border border-solid border-lime-700 text-lime-700",
-  rock:"bg-stone-500 border border-solid border-stone-800 text-stone-800",
-  ghost:"bg-violet-600 border border-solid border-violet-900 text-violet-900",
-  dragon:"bg-indigo-400 border border-solid border-indigo-900 text-indigo-900",
-  dark:"bg-gray-400 border border-solid border-black text-black",
-  steel:"bg-slate-400 border border-solid border-slate-700 text-slate-700",
-  fairy:"bg-pink-300 border border-solid border-pink-600 text-pink-600"
-};
 
-function createCard(pokemon) {
-  const card = document.createElement("div");
+function createPokemonCard(data) {
 
-  card.className =
-    "pokemon-card bg-black text-white rounded-xl p-4 text-center cursor-pointer border-4 border-red-700 shadow-[0_0_15px_rgba(255,0,0,0.5)] hover:scale-105 transition duration-200";
+    const card = document.createElement("div");
 
-  card.dataset.name = pokemon.name;
-  card.dataset.id = pokemon.id;
+    card.className =
+        "pokemon-card bg-gray-200 rounded-xl shadow p-4 text-center cursor-pointer border-solid border-gray-700 text-gray-700 hover:scale-105 transition";
 
-  card.innerHTML = `
-    <img src="${pokemon.image}"
-         class="w-28 h-28 mx-auto">
-    <h3 class="capitalize font-bold text-lg">${pokemon.name}</h3>
-    <p class="text-gray-400">#${pokemon.id}</p>
-  `;
+    card.dataset.name = data.name;
+    card.dataset.id = data.id;
+
+    card.innerHTML = `
+      <img src="${getPokemonImage(data.id)}"
+           loading="lazy"
+           class="w-28 h-28 mx-auto">
+
+      <h3 class="capitalize font-bold text-lg">${data.name}</h3>
+
+      <p class="text-gray-500">#${data.id}</p>
+    `;
 
 card.onclick = () => {
-    updateURL(currentPage, pokemon.id);
-    showDetails(pokemon.id);
+    window.location.href = `pokemon.html?id=${data.id}&p=${currentPage}`;
 };
-
-  grid.appendChild(card);
+    grid.appendChild(card);
 }
 
 //prev and next buttons
 
 document.getElementById("prevPage").onclick = () => {
     if (currentPage > 1) {
-        loadPokemonPage(currentPage - 1);
+        loadPokemon(currentPage - 1);
     }
 };
 
 document.getElementById("nextPage").onclick = () => {
     if (currentPage < totalPages) {
-        loadPokemonPage(currentPage + 1);
+        loadPokemon(currentPage + 1);
     }
 }
-
 
 //Poke details
 
-async function showDetails(id) {
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-    const p = await res.json();
+// async function showDetails(id) {
+//     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+//     const p = await res.json();
 
-    const modal = document.getElementById("modal");
-    const content = document.getElementById("modalContent");
+//     const modal = document.getElementById("modal");
+//     const content = document.getElementById("modalContent");
 
-    const statsHTML = p.stats.map(s => `
-    <div>
-      <p class="text-sm">${s.stat.name}</p>
-      <div class="bg-gray-200 h-3 rounded">
-        <div class="bg-orange-500 h-3 rounded"
-             style="width:${Math.min(s.base_stat, 100)}%"></div>
-      </div>
-    </div>
-  `).join("");
+//     const statsHTML = p.stats.map(s => `
+//     <div>
+//       <p class="text-sm">${s.stat.name}</p>
+//       <div class="bg-gray-200 h-3 rounded">
+//         <div class="bg-orange-500 h-3 rounded"
+//              style="width:${Math.min(s.base_stat, 100)}%"></div>
+//       </div>
+//     </div>
+//   `).join("");
 
-    const abilities = p.abilities
-        .map(a => a.ability.name)
-        .join(", ");
+//     const abilities = p.abilities
+//         .map(a => a.ability.name)
+//         .join(", ");
 
-    content.innerHTML = `
-    <button onclick="closeModal()" class="float-right text-xl">X</button>
+//     content.innerHTML = `
+//     <button onclick="closeModal()" class="float-right text-xl">X</button>
 
-    <img src="${p.sprites.other['official-artwork'].front_default}"
-         class="w-48 mx-auto">
+//     <img src="${p.sprites.other['official-artwork'].front_default}"
+//          class="w-48 mx-auto">
 
-    <h2 class="text-2xl font-bold capitalize text-center">${p.name}</h2>
-    <p class="text-center text-gray-500">#${p.id}</p>
+//     <h2 class="text-2xl font-bold capitalize text-center">${p.name}</h2>
+//     <p class="text-center text-gray-500">#${p.id}</p>
 
-    <p class="mt-3"><b>Height:</b> ${p.height}</p>
-    <p><b>Weight:</b> ${p.weight}</p>
-    <p><b>Abilities:</b> ${abilities}</p>
+//     <p class="mt-3"><b>Height:</b> ${p.height}</p>
+//     <p><b>Weight:</b> ${p.weight}</p>
+//     <p><b>Abilities:</b> ${abilities}</p>
 
-    <h3 class="font-bold mt-4">Stats</h3>
-    ${statsHTML}
-  `;
+//     <h3 class="font-bold mt-4">Stats</h3>
+//     ${statsHTML}
+//   `;
 
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-}
+//     modal.classList.remove("hidden");
+//     modal.classList.add("flex");
+// }
 
-function closeModal() {
-    document.getElementById("modal").classList.add("hidden");
-    updateURL(currentPage);
-}
+// function closeModal() {
+//     document.getElementById("modal").classList.add("hidden");
+//     updateURL(currentPage);
+// }
 
-function updatePageInfo() {
-    const pageInfo = document.getElementById("pageInfo");
-    const prevBtn = document.getElementById("prevPage");
-    const nextBtn = document.getElementById("nextPage");
+// signup
 
-    const start = (currentPage - 1) * limit + 1;
-    const end = Math.min(currentPage * limit, TOTAL_POKEMON);
-
-    pageInfo.textContent =
-        `Page ${currentPage} of ${totalPages}  •  Showing ${end - start + 1} Pokémon`;
-
-    // Hide Prev button on first page
-    if (currentPage === 1) {
-        prevBtn.style.display = "none";
-    } else {
-        prevBtn.style.display = "inline-block";
-    }
-
-    // Hide Next button on last page
-    if (currentPage === totalPages) {
-        nextBtn.style.display = "none";
-    } else {
-        nextBtn.style.display = "inline-block";
-    }
-}
